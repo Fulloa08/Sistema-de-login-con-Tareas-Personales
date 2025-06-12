@@ -3,44 +3,79 @@
 
 package Modelo;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
-/**
- * Maneja las tareas personales de un usuario autenticado.
- */
 public class DatosSesion {
     private final String nombreArchivo;
+    private final ArrayList<Tarea> tareas = new ArrayList<>();
 
     public DatosSesion(String usuario) {
         this.nombreArchivo = usuario + "_todo.txt";
         crearArchivoSiNoExiste();
+        cargarTareas();
     }
 
-    /**
-     * Crea el archivo de tareas si no existe.
-     */
     private void crearArchivoSiNoExiste() {
-        // TODO: Verificar existencia del archivo y crearlo si no existe.
+        File f = new File(nombreArchivo);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                System.out.println("Error al crear el archivo de tareas.");
+            }
+        }
     }
 
-    /**
-     * Escribe una nueva tarea al final del archivo.
-     *
-     * @param tarea Texto de la tarea.
-     * @return true si se guardó correctamente, false si ocurrió un error.
-     */
-    public boolean escribirTarea(String tarea) {
-        // TODO: Implementar escritura en el archivo.
-        return false;
+    public void agregarTarea(String tareaTexto) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo, true))) {
+            writer.write(tareaTexto);
+            writer.newLine();
+            tareas.add(new Tarea(tareaTexto));
+        } catch (IOException e) {
+            System.out.println("Error al guardar la tarea.");
+        }
     }
 
-    /**
-     * Muestra todas las tareas almacenadas en el archivo.
-     */
+    private void cargarTareas() {
+        File f = new File(nombreArchivo);
+        try (Scanner lector = new Scanner(f)) {
+            while (lector.hasNextLine()) {
+                String linea = lector.nextLine().trim();
+                if (!linea.isEmpty()) {
+                    tareas.add(new Tarea(linea));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("No se pudo leer el archivo de tareas.");
+        }
+    }
+
     public void mostrarTareas() {
-        // TODO: Leer y mostrar cada línea del archivo.
+        tareas.clear(); // Limpiamos antes de recargar
+        File archivoTareas = new File(nombreArchivo);
+
+        if (!archivoTareas.exists()) {
+            System.out.println("No hay tareas registradas aún.");
+            return;
+        }
+
+        try (Scanner lector = new Scanner(archivoTareas)) {
+            while (lector.hasNextLine()) {
+                String linea = lector.nextLine().trim();
+                if (!linea.isEmpty()) {
+                    Tarea tarea = new Tarea(linea);
+                    tareas.add(tarea);
+                    System.out.println("- " + tarea.getDescripcion());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error al leer las tareas: " + e.getMessage());
+        }
+    }
+
+    public ArrayList<Tarea> getTareas() {
+        return tareas;
     }
 }

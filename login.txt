@@ -1,0 +1,4 @@
+usuario1;clave1
+usuario2;clave2
+admin;adminpass
+Felipe;1234

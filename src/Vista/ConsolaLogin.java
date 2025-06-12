@@ -4,7 +4,6 @@ import Controlador.Login;
 import Controlador.SesionActiva;
 import Modelo.DatosLogin;
 import Modelo.Usuario;
-
 import java.util.Scanner;
 
 /**
@@ -44,4 +43,4 @@ public class ConsolaLogin {
     }
 }
 
-//LISTO
+//LISTO, arreglar problemas con código y resolver problemas con clase usuario

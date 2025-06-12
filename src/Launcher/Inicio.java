@@ -1,7 +1,7 @@
 //Punto de entrada del programa, crea una instancia de ConsolaLOgin y llama al método menú()
 package Launcher;
 
-import vista.ConsolaLogin;
+import Vista.ConsolaLogin;
 
 /**
  * Clase principal del sistema.

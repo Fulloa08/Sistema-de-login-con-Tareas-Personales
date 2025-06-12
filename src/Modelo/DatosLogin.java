@@ -1,5 +1,3 @@
-//Maneja las credenciales desde login.txt (lee y carga los datos), si el archivo no existe, lo crea automáticamente vacío,
-//almacena los pares usuario;contraseña en estructura interna para consulta.
 package Modelo;
 
 import java.io.File;
@@ -12,32 +10,46 @@ import java.util.Scanner;
  * Gestiona el archivo login.txt.
  */
 public class DatosLogin {
+    private final ArrayList<Usuario> usuarios = new ArrayList<>();
     private final String archivo = "login.txt";
-    private final ArrayList<String> credenciales = new ArrayList<>();
 
     public DatosLogin() {
         crearArchivoSiNoExiste();
         cargarUsuarios();
     }
 
-    /**
-     * Devuelve la lista de credenciales cargadas.
-     */
-    public ArrayList<String> getCredenciales() {
-        return credenciales;
-    }
-
-    /**
-     * Crea el archivo login.txt si no existe.
-     */
     private void crearArchivoSiNoExiste() {
-        // TODO: Verificar existencia del archivo y crearlo si no existe.
+        File f = new File(archivo);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                System.out.println("Error al crear el archivo de login.");
+            }
+        }
     }
 
-    /**
-     * Carga los pares usuario;clave desde el archivo a la lista.
-     */
     private void cargarUsuarios() {
-        // TODO: Leer línea por línea y agregar solo las válidas al ArrayList.
+        File f = new File(archivo);
+        try (Scanner lector = new Scanner(f)) {
+            while (lector.hasNextLine()) {
+                String linea = lector.nextLine().trim();
+                if (!linea.isEmpty() && linea.contains(";")) {
+                    String[] partes = linea.split(";");
+                    String nombre = partes[0].trim();
+                    String clave = partes[1].trim();
+                    Usuario usuario = new Usuario(nombre, clave);
+                    usuarios.add(usuario);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("No se pudo leer el archivo de login.");
+        }
+    }
+
+
+
+    public ArrayList<Usuario> getUsuarios() {
+        return usuarios;
     }
 }
