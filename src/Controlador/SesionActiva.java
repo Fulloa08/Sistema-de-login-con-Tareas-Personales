@@ -2,20 +2,14 @@
 //si es admin, puede registrar nuevos usuarios con GestorUsuarios
 package Controlador;
 
-import Modelo.DatosSesion;
-import Modelo.GestorUsuarios;
-import Modelo.Usuario;
-import Modelo.Tarea;
+import Modelo.*;
+
 import java.util.Scanner;
 
-/**
- * Representa la sesión de un usuario logueado.
- */
 public class SesionActiva {
     private final Usuario usuario;
-    private final Scanner scanner = new Scanner(System.in);
-    private final GestorUsuarios gestorUsuarios = new GestorUsuarios();
     private final DatosSesion datosSesion;
+    private final Scanner scanner = new Scanner(System.in);
 
     public SesionActiva(Usuario usuario) {
         this.usuario = usuario;
@@ -23,61 +17,52 @@ public class SesionActiva {
     }
 
     public void iniciar() {
-        int opcion;
-        do {
-            mostrarOpciones();
-            try {
-                opcion = Integer.parseInt(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                opcion = -1;
-            }
+        boolean salir = false;
+        while (!salir) {
+            System.out.println("\n1. Ver tareas");
+            System.out.println("2. Agregar tarea");
+            System.out.println("3. Ver perfil");
+            System.out.println("4. Salir");
+            System.out.print("Seleccione una opción: ");
+            int opcion = Integer.parseInt(scanner.nextLine());
 
             switch (opcion) {
-                case 1 -> escribirTarea();
-                case 2 -> datosSesion.mostrarTareas();
-                case 3 -> {
-                    if (usuario.getNombre().equalsIgnoreCase("admin")) {
-                        registrarUsuario();
-                    } else {
-                        System.out.println("Acceso denegado.");
-                    }
+                case 1 -> datosSesion.mostrarTareas();
+                case 2 -> agregarTarea();
+                case 3 -> mostrarPerfil();
+                case 4 -> {
+                    salir = true;
+                    mostrarResumenSesion();
                 }
-                case 0 -> System.out.println("Sesión finalizada.");
                 default -> System.out.println("Opción inválida.");
             }
-        } while (opcion != 0);
-    }
-
-    private void mostrarOpciones() {
-        System.out.println("\nMenú de usuario: " + usuario.getNombre());
-        System.out.println("1. Escribir nueva tarea");
-        System.out.println("2. Mostrar tareas");
-        if (usuario.getNombre().equalsIgnoreCase("admin")) {
-            System.out.println("3. Registrar nuevo usuario");
         }
-        System.out.println("0. Salir");
-        System.out.print("Seleccione una opción: ");
     }
 
-    private void escribirTarea() {
-        System.out.print("Ingresar la descripción de la tarea: ");
+    private void agregarTarea() {
+        System.out.print("Ingrese descripción de la tarea: ");
         String descripcion = scanner.nextLine();
-        datosSesion.agregarTarea(descripcion);
-        System.out.println("Tarea guardada.");
+
+        System.out.print("Prioridad (BAJA, MEDIA, ALTA): ");
+        Prioridad prioridad = Prioridad.valueOf(scanner.nextLine().toUpperCase());
+
+        datosSesion.agregarTarea(descripcion, prioridad);
+        usuario.agregarTarea(new Tarea(descripcion, prioridad));
+        System.out.println("Tarea agregada correctamente.");
     }
 
-    private void registrarUsuario() {
-        System.out.print("Nuevo nombre de usuario: ");
-        String nuevoNombre = scanner.nextLine();
-        System.out.print("Clave: ");
-        String nuevaClave = scanner.nextLine();
+    private void mostrarPerfil() {
+        Perfil perfil = usuario.getPerfil();
+        System.out.println("Correo: " + perfil.getCorreo());
+        System.out.println("Fecha de creación: " + perfil.getFechaCreacion());
+    }
 
-        boolean exito = gestorUsuarios.registrar(nuevoNombre, nuevaClave);
-        if (exito) {
-            System.out.println("Usuario registrado exitosamente.");
-        } else {
-            System.out.println("Error al registrar usuario.");
-        }
+    private void mostrarResumenSesion() {
+        HistorialSesion historial = datosSesion.getHistorial();
+        System.out.println("\nResumen de sesión:");
+        System.out.println("Inicio: " + historial.getInicio());
+        System.out.println("Tareas agregadas: " + historial.getTareasAgregadas());
+        System.out.println("Sesión finalizada.");
     }
 }
 

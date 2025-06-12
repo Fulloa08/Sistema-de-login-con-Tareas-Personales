@@ -1,16 +1,24 @@
 package Modelo;
 
-/**
- * Representa una tarea con una descripción.
- */
 public class Tarea {
-    private final String descripcion;
+    private String descripcion;
+    private Prioridad prioridad;
 
-    public Tarea(String descripcion) {
+    public Tarea(String descripcion, Prioridad prioridad) {
         this.descripcion = descripcion;
+        this.prioridad = prioridad;
     }
 
     public String getDescripcion() {
         return descripcion;
+    }
+
+    public Prioridad getPrioridad() {
+        return prioridad;
+    }
+
+    @Override
+    public String toString() {
+        return prioridad + " - " + descripcion;
     }
 }

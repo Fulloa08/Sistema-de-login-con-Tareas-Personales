@@ -1,6 +1,5 @@
 //Maneja archivos de tareas personales, formato_ <usuario>_todo.txt, si no existe, se crea automáticamente.
 //Escribe nuevas tareas y las muestra por consola
-
 package Modelo;
 
 import java.io.*;
@@ -10,72 +9,63 @@ import java.util.Scanner;
 public class DatosSesion {
     private final String nombreArchivo;
     private final ArrayList<Tarea> tareas = new ArrayList<>();
+    private final HistorialSesion historial;
 
     public DatosSesion(String usuario) {
         this.nombreArchivo = usuario + "_todo.txt";
+        this.historial = new HistorialSesion();
         crearArchivoSiNoExiste();
         cargarTareas();
     }
 
     private void crearArchivoSiNoExiste() {
-        File f = new File(nombreArchivo);
-        if (!f.exists()) {
+        File file = new File(nombreArchivo);
+        if (!file.exists()) {
             try {
-                f.createNewFile();
+                file.createNewFile();
             } catch (IOException e) {
-                System.out.println("Error al crear el archivo de tareas.");
+                System.out.println("Error al crear archivo de tareas.");
             }
-        }
-    }
-
-    public void agregarTarea(String tareaTexto) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo, true))) {
-            writer.write(tareaTexto);
-            writer.newLine();
-            tareas.add(new Tarea(tareaTexto));
-        } catch (IOException e) {
-            System.out.println("Error al guardar la tarea.");
         }
     }
 
     private void cargarTareas() {
-        File f = new File(nombreArchivo);
-        try (Scanner lector = new Scanner(f)) {
-            while (lector.hasNextLine()) {
-                String linea = lector.nextLine().trim();
-                if (!linea.isEmpty()) {
-                    tareas.add(new Tarea(linea));
+        try (Scanner sc = new Scanner(new File(nombreArchivo))) {
+            while (sc.hasNextLine()) {
+                String linea = sc.nextLine();
+                String[] partes = linea.split(";");
+                if (partes.length == 2) {
+                    tareas.add(new Tarea(partes[0], Prioridad.valueOf(partes[1])));
                 }
             }
         } catch (FileNotFoundException e) {
-            System.out.println("No se pudo leer el archivo de tareas.");
+            System.out.println("No se pudo cargar el archivo de tareas.");
+        }
+    }
+
+    public void agregarTarea(String descripcion, Prioridad prioridad) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo, true))) {
+            writer.write(descripcion + ";" + prioridad);
+            writer.newLine();
+            tareas.add(new Tarea(descripcion, prioridad));
+            historial.registrarNuevaTarea();
+        } catch (IOException e) {
+            System.out.println("Error al guardar tarea.");
         }
     }
 
     public void mostrarTareas() {
-        tareas.clear(); // Limpiamos antes de recargar
-        File archivoTareas = new File(nombreArchivo);
-
-        if (!archivoTareas.exists()) {
-            System.out.println("No hay tareas registradas aún.");
-            return;
-        }
-
-        try (Scanner lector = new Scanner(archivoTareas)) {
-            while (lector.hasNextLine()) {
-                String linea = lector.nextLine().trim();
-                if (!linea.isEmpty()) {
-                    Tarea tarea = new Tarea(linea);
-                    tareas.add(tarea);
-                    System.out.println("- " + tarea.getDescripcion());
-                }
+        if (tareas.isEmpty()) {
+            System.out.println("No hay tareas registradas.");
+        } else {
+            System.out.println("Tareas actuales:");
+            for (Tarea t : tareas) {
+                System.out.println("- " + t);
             }
-        } catch (IOException e) {
-            System.out.println("Error al leer las tareas: " + e.getMessage());
         }
     }
 
-    public ArrayList<Tarea> getTareas() {
-        return tareas;
+    public HistorialSesion getHistorial() {
+        return historial;
     }
 }
