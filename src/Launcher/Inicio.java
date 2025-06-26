@@ -1,17 +1,14 @@
-//Punto de entrada del programa, crea una instancia de ConsolaLOgin y llama al método menú()
 package Launcher;
 
-import Vista.ConsolaLogin;
+import Vista.LoginView;
 
-/**
- * Clase principal del sistema.
- * Contiene el método main para lanzar la aplicación.
- */
+import javax.swing.*;
+
 public class Inicio {
     public static void main(String[] args) {
-        ConsolaLogin consola = new ConsolaLogin();
-        consola.menu();
+        // Asegura que la GUI se cargue en el hilo correcto
+        SwingUtilities.invokeLater(() -> {
+            new LoginView().setVisible(true);
+        });
     }
 }
-
-//LISTO

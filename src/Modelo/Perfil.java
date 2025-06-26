@@ -1,24 +1,41 @@
 package Modelo;
 
 import java.time.LocalDateTime;
-import java.util.EnumMap;
 
 public class Perfil {
-    private String correo;
-    private LocalDateTime fechaCreacion;
-    private EnumMap<Prioridad, Integer> tareasPorPrioridad;
+    private final String correo;
+    private final LocalDateTime fechaCreacion;
+
+    private int tareasBaja;
+    private int tareasMedia;
+    private int tareasAlta;
 
     public Perfil(String correo) {
         this.correo = correo;
         this.fechaCreacion = LocalDateTime.now();
-        tareasPorPrioridad = new EnumMap<>(Prioridad.class);
-        for (Prioridad p : Prioridad.values()) {
-            tareasPorPrioridad.put(p, 0);
-        }
+        this.tareasBaja = 0;
+        this.tareasMedia = 0;
+        this.tareasAlta = 0;
     }
 
     public void registrarTarea(Prioridad prioridad) {
-        tareasPorPrioridad.put(prioridad, tareasPorPrioridad.get(prioridad) + 1);
+        switch (prioridad) {
+            case BAJA -> tareasBaja++;
+            case MEDIA -> tareasMedia++;
+            case ALTA -> tareasAlta++;
+        }
+    }
+
+    public int getTareasBaja() {
+        return tareasBaja;
+    }
+
+    public int getTareasMedia() {
+        return tareasMedia;
+    }
+
+    public int getTareasAlta() {
+        return tareasAlta;
     }
 
     public String getCorreo() {
@@ -29,7 +46,14 @@ public class Perfil {
         return fechaCreacion;
     }
 
-    public EnumMap<Prioridad, Integer> getTareasPorPrioridad() {
-        return tareasPorPrioridad;
+    @Override
+    public String toString() {
+        return " -------- Perfil --------\n" +
+                "  Correo          : " + correo + "\n" +
+                "  Fecha Creación  : " + fechaCreacion + "\n" +
+                "  Tareas por Prioridad:\n" +
+                "    BAJA  : " + tareasBaja + "\n" +
+                "    MEDIA : " + tareasMedia + "\n" +
+                "    ALTA  : " + tareasAlta;
     }
 }

@@ -1,67 +1,61 @@
-//Maneja archivos de tareas personales, formato_ <usuario>_todo.txt, si no existe, se crea automáticamente.
-//Escribe nuevas tareas y las muestra por consola
 package Modelo;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Scanner;
 
 public class DatosSesion {
-    private final String nombreArchivo;
-    private final ArrayList<Tarea> tareas = new ArrayList<>();
+    private final Usuario usuario;
     private final HistorialSesion historial;
+    private final String archivo;
 
-    public DatosSesion(String usuario) {
-        this.nombreArchivo = usuario + "_todo.txt";
+    public DatosSesion(Usuario usuario) {
+        this.usuario = usuario;
+        this.archivo = usuario.getNombre() + "_todo.txt";
         this.historial = new HistorialSesion();
-        crearArchivoSiNoExiste();
         cargarTareas();
     }
 
-    private void crearArchivoSiNoExiste() {
-        File file = new File(nombreArchivo);
+    private boolean crearArchivoSiNoExiste(File file) {
         if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
-                System.out.println("Error al crear archivo de tareas.");
+                System.out.println("Error al crear archivo de tareas: " + archivo);
+                return false;
             }
         }
+        return true;
     }
 
     private void cargarTareas() {
-        try (Scanner sc = new Scanner(new File(nombreArchivo))) {
-            while (sc.hasNextLine()) {
-                String linea = sc.nextLine();
-                String[] partes = linea.split(";");
+        File file = new File(archivo);
+        if (!crearArchivoSiNoExiste(file)) return;
+
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(";", 2);
                 if (partes.length == 2) {
-                    tareas.add(new Tarea(partes[0], Prioridad.valueOf(partes[1])));
+                    String descripcion = partes[0];
+                    Prioridad prioridad = Prioridad.valueOf(partes[1]);
+                    usuario.agregarTarea(new Tarea(descripcion, prioridad, false));
                 }
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("No se pudo cargar el archivo de tareas.");
-        }
-    }
-
-    public void agregarTarea(String descripcion, Prioridad prioridad) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo, true))) {
-            writer.write(descripcion + ";" + prioridad);
-            writer.newLine();
-            tareas.add(new Tarea(descripcion, prioridad));
-            historial.registrarNuevaTarea();
         } catch (IOException e) {
-            System.out.println("Error al guardar tarea.");
+            System.out.println("Error al leer tareas del archivo: " + archivo);
         }
     }
 
-    public void mostrarTareas() {
-        if (tareas.isEmpty()) {
-            System.out.println("No hay tareas registradas.");
-        } else {
-            System.out.println("Tareas actuales:");
-            for (Tarea t : tareas) {
-                System.out.println("- " + t);
-            }
+    public void agregarTarea(Tarea tarea) {
+        usuario.agregarTarea(tarea);
+        historial.registrarTarea();
+        guardarTareaEnArchivo(tarea);
+    }
+
+    private void guardarTareaEnArchivo(Tarea tarea) {
+        try (FileWriter fw = new FileWriter(archivo, true)) {
+            fw.write(tarea.getDescripcion() + ";" + tarea.getPrioridad() + "\n");
+        } catch (IOException e) {
+            System.out.println("Error al guardar tarea en archivo: " + archivo);
         }
     }
 

@@ -1,53 +1,48 @@
 package Modelo;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
-/**
- * Gestiona el archivo login.txt.
- */
 public class DatosLogin {
     private final ArrayList<Usuario> usuarios = new ArrayList<>();
-    private final String archivo = "login.txt";
+    private static final String ARCHIVO = "login.txt";
 
     public DatosLogin() {
-        crearArchivoSiNoExiste();
-        cargarUsuarios();
+        cargarUsuariosDesdeArchivo();
     }
 
-    private void crearArchivoSiNoExiste() {
-        File f = new File(archivo);
-        if (!f.exists()) {
+    private void cargarUsuariosDesdeArchivo() {
+        File archivo = new File(ARCHIVO);
+
+        if (!archivo.exists()) {
             try {
-                f.createNewFile();
+                archivo.createNewFile();
             } catch (IOException e) {
-                System.out.println("Error al crear el archivo de login.");
+                System.out.println("No se pudo crear el archivo de login.");
+                return;
             }
         }
-    }
 
-    private void cargarUsuarios() {
-        File f = new File(archivo);
-        try (Scanner lector = new Scanner(f)) {
-            while (lector.hasNextLine()) {
-                String linea = lector.nextLine().trim();
-                if (!linea.isEmpty() && linea.contains(";")) {
-                    String[] partes = linea.split(";");
-                    String nombre = partes[0].trim();
-                    String clave = partes[1].trim();
-                    Usuario usuario = new Usuario(nombre, clave);
-                    usuarios.add(usuario);
+        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+            String linea;
+            while ((linea = br.readLine()) != null) {
+                String[] partes = linea.split(";");
+                if (partes.length >= 3) {
+                    String nombre = partes[0];
+                    String clave = partes[1];
+                    boolean esAdmin = partes[2].equals("1");
+                    usuarios.add(new Usuario(nombre, clave, esAdmin));
+                } else if (partes.length == 2) {
+                    usuarios.add(new Usuario(partes[0], partes[1], false));
                 }
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("No se pudo leer el archivo de login.");
+        } catch (IOException e) {
+            System.out.println("Error al leer el archivo de login: " + e.getMessage());
         }
     }
-
-
 
     public ArrayList<Usuario> getUsuarios() {
         return usuarios;
